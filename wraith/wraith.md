@@ -1,7 +1,7 @@
 - Feature Name: Wraith
 - Start Date: 2020-10-18
 - RFC PR: [racket/racket2-rfcs#0000](https://github.com/racket/racket2-rfcs/pull/0000)
-- Authors: Alex Knauth and Christopher Lemmer Webber, based on ideas from Arne Babenhauserheide
+- Authors: Alex Knauth and Christine Lemmer-Webber, based on ideas from Arne Babenhauserheide
 
 # Summary
 [summary]: #summary
