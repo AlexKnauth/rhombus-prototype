@@ -1,0 +1,20 @@
+
+define e: exp 1
+
+define (around p): displayln "before"
+                   define x (p)
+                   displayln "after"
+                   x
+
+define (natnat x)
+  cond
+    (zero? x): 0
+    else: add1 (natnat (sub1 x))
+
+define (g s x)
+  match s
+    'around: displayln "before"
+             define v (x)
+             displayln "after"
+             v
+    'natnat: natnat x
