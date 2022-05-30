@@ -59,7 +59,7 @@
              (define (rhombus n) (values n 'rhombus/primitive))
              (case who
                [(application) (rhombus '|function call|)]
-               [(=) (rhombus '.=)]
+               [(=) (rhombus '=.)]
                [(vector-ref) (rhombus 'Array.ref)]
                [(vector-set!) (rhombus 'Array.set)]
                [else (values who who-realm)])]

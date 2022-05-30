@@ -40,7 +40,7 @@
 }
 
 @doc[
-  operator ((x :: Number) .= (y :: Number)) :: Boolean
+  operator ((x :: Number) =. (y :: Number)) :: Boolean
 ]{
 
  Reports whether @rhombus[x] and @rhombus[y] are numerically equal,
@@ -48,9 +48,9 @@
  to exact numbers.
 
 @examples[
-  1 .= 1,
-  1 .= 2,
-  1.0 .= 1
+  1 =. 1,
+  1 =. 2,
+  1.0 =. 1
 ]
 
 }

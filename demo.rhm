@@ -344,7 +344,7 @@ fun
 | add_two(x, y) :: String:
     x & " and " & y
 
-add_two(7) .= 9.0
+add_two(7) =. 9.0
 add_two(6, 7) == "6 and 7"
 
 begin:
@@ -612,7 +612,7 @@ weirdly & "none"
 
 dot.macro 'myint_dot_provider $left $dot $right':
   match right
-  | 'is_zero': '$left .= 0'
+  | 'is_zero': '$left =. 0'
   | 'add': 'fun (v -: MyInt) -: MyInt: $left + v'
 
 annotation.macro 'MyInt':

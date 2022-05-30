@@ -15,7 +15,7 @@
                      [rhombus<= <=]
                      [rhombus>= >=]
                      [rhombus> >])
-         .=
+         =.
          sqrt cos sin tan log exp expt
          floor ceiling round
 
@@ -55,13 +55,13 @@
 (define-syntax-rule (define-comp-infix name racket-name)
   (define-infix name racket-name
     #:weaker-than (rhombus+ rhombus- rhombus* rhombus/)
-    #:same-as (rhombus> rhombus>= .= rhombus<=)
+    #:same-as (rhombus> rhombus>= =. rhombus<=)
     #:stronger-than (\|\| &&)
     #:associate 'none))
 
 (define-comp-infix rhombus< <)
 (define-comp-infix rhombus<= <=)
-(define-comp-infix .= =)
+(define-comp-infix =. =)
 (define-comp-infix rhombus>= >=)
 (define-comp-infix rhombus> >)
 
