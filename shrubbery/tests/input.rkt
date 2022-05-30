@@ -1925,7 +1925,7 @@ INPUT
     (group 0.1)
     (group -0.1)
     (group 1.2)
-    (group 1 0.2)
+    (group 1 (op |.|) 2)
     (group 1 (op |.|) 2)
     (group 1.0 (op +) 2)
     (group 1 (op .=) 2)

@@ -128,7 +128,7 @@
   [bad-keyword (:: "~")]
   
   ;; disallows a number that starts +, -, or "."
-  [number/continuing (:or decimal-number/continuing
+  [number/continuing (:or decimal-number
                           hex-number)]
   [number (:: (:? sign)
               (:or decimal-number
@@ -139,11 +139,9 @@
 
   ;; doesn't match digits ending with "."; that case is handled with
   ;; a follow-up peek to use "." when not part of an multi-char operator
-  [decimal-number/continuing (:or (:: uinteger (:? number-exponent))
-                                  (:: uinteger "." (:? uinteger) number-exponent)
-                                  (:: uinteger "." uinteger))]
-  [decimal-number (:or decimal-number/continuing
-                       (:: "." uinteger (:? number-exponent)))]
+  [decimal-number (:or (:: uinteger (:? number-exponent))
+                       (:: uinteger "." (:? uinteger) number-exponent)
+                       (:: uinteger "." uinteger))]
   [number-exponent (:: exponent-marker (:? sign) uinteger)]
   [hex-number (:: "0x" uinteger16)]
 
