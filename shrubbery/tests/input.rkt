@@ -1899,6 +1899,11 @@ INPUT
 1 . 2
 1.+2
 1.=2
+1+.2
+1-.2
+1*.2
+1/.2
+1=.2
 1..2
 1.2..
 
@@ -1929,6 +1934,11 @@ INPUT
     (group 1 (op |.|) 2)
     (group 1.0 (op +) 2)
     (group 1 (op .=) 2)
+    (group 1 (op +.) 2)
+    (group 1 (op -.) 2)
+    (group 1 (op *.) 2)
+    (group 1 (op /.) 2)
+    (group 1 (op =.) 2)
     (group 1 (op ..) 2)
     (group 1.2 (op ..))
     (group 1 (op +) 2)
