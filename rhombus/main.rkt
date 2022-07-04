@@ -4,8 +4,8 @@
                      shrubbery/print
                      (only-in "private/ellipsis.rkt"
                               [... rhombus...])
-                     (only-in "private/quasiquote.rkt"
-                              $))
+                     (only-in "private/quasiquote.rkt" $)
+                     "private/rest-marker.rkt")
          racket/interaction-info
          "private/builtin-dot.rkt"
          "private/bounce.rkt"
@@ -17,7 +17,9 @@
          #%top-interaction
          (for-syntax
           (rename-out [rhombus... ...])
-          $))
+          $
+          &
+          ~&))
 
 (bounce "private/implicit.rkt"
         "private/underscore.rkt"
@@ -45,6 +47,7 @@
         "private/cond.rkt"
         "private/match.rkt"
         "private/quasiquote.rkt"
+        "private/rest-marker.rkt"
         "private/ellipsis.rkt"
         "private/keyword.rkt"
         "private/symbol.rkt"
