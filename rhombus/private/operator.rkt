@@ -73,6 +73,7 @@
        (build-function name
                        #'(#f) #'(arg) #'(arg.parsed) #'(#f)
                        #'#f #'#f
+                       #'#f #'#f
                        ret-predicate
                        rhs
                        start end)]))
@@ -84,6 +85,7 @@
          [right::binding
           (build-function name
                           #'(#f #f) #'(left right) #'(left.parsed right.parsed) #'(#f #f)
+                          #'#f #'#f
                           #'#f #'#f
                           ret-predicate
                           rhs

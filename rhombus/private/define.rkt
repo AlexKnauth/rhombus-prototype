@@ -50,6 +50,7 @@
               #,(build-case-function the-id
                                      #'((arg ...) ...) #'((arg.parsed ...) ...)
                                      #'(rest.arg ...) #'(rest.parsed ...)
+                                     #'(rest.kwarg ...) #'(rest.kwparsed ...)
                                      #'(ret.predicate ...)
                                      #'(rhs ...)
                                      #'form-id #'alts-tag))))]
@@ -63,6 +64,7 @@
               #,(build-function #'id
                                 #'(arg.kw ...) #'(arg ...) #'(arg.parsed ...) #'(arg.default ...)
                                 #'rest.arg #'rest.parsed
+                                #'rest.kwarg #'rest.kwparsed
                                 #'ret.predicate
                                 #'rhs
                                 #'form-id
