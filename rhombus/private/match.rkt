@@ -40,8 +40,9 @@
                                    #`((b.parsed) ... (#,(binding-form
                                                          #'else-infoer
                                                          #'(#t ignored))))
-                                   (falses #'(b ...))
                                    (falses #'(b ...)) (falses #'(b ...))
+                                   (falses #'(b ...)) (falses #'(b ...))
+                                   (falses #'(b ...))
                                    #'(clause.rhs ... else-rhs)
                                    #'form-id #'alts-tag)
             (rhombus-expression (group in ...)))
@@ -58,8 +59,9 @@
                                    #`((b.parsed) ... (#,(binding-form
                                                          #'else-infoer
                                                          #'(#f unmatched))))
-                                   (falses #'(b ...))
                                    (falses #'(b ...)) (falses #'(b ...))
+                                   (falses #'(b ...)) (falses #'(b ...))
+                                   (falses #'(b ...))
                                    #`(rhs ... (parsed
                                                (match-fallthrough 'form-id unmatched #,(syntax-srcloc (respan stx)))))
                                    #'form-id #'alts-tag)
