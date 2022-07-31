@@ -132,7 +132,8 @@
 ;; parses a list pattern that has already been checked for use with a
 ;; suitable `parens` or `brackets` form
 (define-for-syntax (parse-list-binding stx)
-  (define (generate-binding form-id pred args tail [rest-arg #f] [rest-selector #f])
+  (define (generate-binding form-id pred args tail [rest-arg #f] [rest-selector #f]
+                            [rest-repetition? #t])
     ((make-composite-binding-transformer "List"
                                          pred
                                          #:steppers (if (null? args)
@@ -145,19 +146,31 @@
                                          (for/list ([arg (in-list args)])
                                            #'())
                                          #:ref-result-info? #t
-                                         #:rest-accessor rest-selector)
+                                         #:rest-accessor rest-selector
+                                         #:rest-repetition? rest-repetition?)
      #`(#,form-id (parens . #,args) . #,tail)
      rest-arg))
   (syntax-parse stx
     #:datum-literals (group op)
-    #:literals (rhombus...)
+    #:literals (& rhombus...)
+    [(form-id (_ arg ... (group (op &) rest-arg ...)) . tail)
+     (define args (syntax->list #'(arg ...)))
+     (define len (length args))
+     (define pred #`(lambda (v)
+                      (and (list? v)
+                           (>= (length v) #,len))))
+     (generate-binding #'form-id pred args #'tail #'(group rest-arg ...)
+                       (if (null? args) #'values #'cdr)
+                       #f)]
     [(form-id (_ arg ... rest-arg (group (op rhombus...))) . tail)
      (define args (syntax->list #'(arg ...)))
      (define len (length args))
      (define pred #`(lambda (v)
                       (and (list? v)
                            (>= (length v) #,len))))
-     (generate-binding #'form-id pred args #'tail #'rest-arg (if (null? args) #'values #'cdr))]
+     (generate-binding #'form-id pred args #'tail #'rest-arg
+                       (if (null? args) #'values #'cdr)
+                       #t)]
     [(form-id (_ arg ...) . tail)
      (define args (syntax->list #'(arg ...)))
      (define len (length args))
