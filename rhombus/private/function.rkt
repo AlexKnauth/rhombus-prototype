@@ -318,10 +318,10 @@
               (with-syntax ([(try-next arg-id ...) (generate-temporaries
                                                     (cons 'try-next
                                                           (fcase-args (find-matching-case n same))))]
-                            [(maybe-rest-tmp ...) (if (negative? n)
+                            [(maybe-rest-tmp ...) (if (narity-at-least? n)
                                                       #'(#:rest rest-tmp)
                                                       #'())]
-                            [maybe-rest-tmp-use (if (negative? n)
+                            [maybe-rest-tmp-use (if (narity-at-least? n)
                                                     #'rest-tmp
                                                     #'null)]
                             [(maybe-kwrest-tmp ...) (if kwrest?
@@ -420,10 +420,18 @@
         defns)]
       [else defns]))
 
-  ;; returns (listof (cons n (listof fcase)))
-  ;; where `n` is the argument count, and a negative
-  ;; `n` means "-(n+1) or more"; although the `n`s
-  ;; can be in any order, the `fcase`s are kept in the same
+  ;; A Narity is one of:
+  ;;  - Natural
+  ;;  - (narity-at-least Natural)
+  ;; where a natural `n` is the argument count,
+  ;; and a negative `n` means "-(n+1) or more"
+  (define (narity-at-least v) (- (add1 v)))
+  (define (narity-at-least? n) (negative? n))
+  (define (narity-at-least-value n) (sub1 (- n)))
+
+  ;; returns (listof (cons Narity (listof fcase)))
+  ;; although the `n`s can be in any order,
+  ;; the `fcase`s are kept in the same
   ;; order within the group for one `n`
   (define (group-by-counts fcases)
     ;; if there is any rest clause, then other clauses
@@ -441,14 +449,14 @@
       (for/fold ([ht #hasheqv()]) ([fc (in-list fcases)])
         (define n (length (fcase-args fc)))
         (define key (if (and rest-min (>= n rest-min))
-                        (- (add1 rest-min))
+                        (narity-at-least rest-min)
                         n))
         (hash-set ht key (cons fc (hash-ref ht key '())))))
     (for/list ([(key sames) (in-hash ht)])
       (cons key (reverse sames))))
 
   (define (find-matching-case n same)
-    (define find-n (if (negative? n) (- (add1 n)) n))
+    (define find-n (if (narity-at-least? n) (narity-at-least-value n) n))
     (for/or ([fc (in-list same)])
       (define fc-n (length (fcase-args fc)))
       (and (eqv? find-n fc-n)
@@ -460,7 +468,7 @@
   (define (adapt-arguments-for-count fc n arg-ids-stx rest-tmp kwrest-tmp try-next)
     (define base-f-n (length (fcase-args fc)))
     (define f-n (if (syntax-e (fcase-rest-arg fc))
-                    (- (add1 base-f-n))
+                    (narity-at-least base-f-n)
                     base-f-n))
     (define adapt-kwrest
       (cond
@@ -477,8 +485,8 @@
     (cond
       [(eqv? n f-n) (values arg-ids-stx adapt-kwrest)]
       [else
-       (unless (negative? n) (error "assert failed in wrap-adapted"))
-       (define base-n (- (add1 n)))
+       (unless (narity-at-least? n) (error "assert failed in wrap-adapted"))
+       (define base-n (narity-at-least-value n))
        (define arg-ids (syntax->list arg-ids-stx))
        (define new-arg-ids (append arg-ids
                                    (generate-temporaries (list-tail (fcase-args fc) base-n))))
@@ -488,7 +496,7 @@
           (let loop ([new-arg-ids (list-tail new-arg-ids base-n)])
             (cond
               [(null? new-arg-ids)
-               (if (negative? f-n)
+               (if (narity-at-least? f-n)
                    (adapt-kwrest body)
                    #`(if (null? #,rest-tmp)
                          (let ()
