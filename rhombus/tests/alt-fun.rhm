@@ -136,3 +136,14 @@ begin:
   check: f([1]); 1
   check: f(); 0
   check: f([], [1]); 0
+
+/*
+Idea:
+  a function for every source-case
+    with inputs being the "bind-ids" or whatever else the output of the matchers are
+    with the body containing the binders and static-info before the source-body
+  create a target-case for every case-arity
+    group overlaps but maintain order
+    match patterns
+    call the function for the source-case that the match suceeds for
+*/
