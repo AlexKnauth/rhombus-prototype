@@ -318,10 +318,10 @@
               (with-syntax ([(try-next arg-id ...) (generate-temporaries
                                                     (cons 'try-next
                                                           (fcase-args (find-matching-case n same))))]
-                            [(maybe-rest-tmp ...) (if (narity-at-least? n)
+                            [(maybe-rest-tmp ...) (if (arity-at-least? n)
                                                       #'(#:rest rest-tmp)
                                                       #'())]
-                            [maybe-rest-tmp-use (if (narity-at-least? n)
+                            [maybe-rest-tmp-use (if (arity-at-least? n)
                                                     #'rest-tmp
                                                     #'null)]
                             [(maybe-kwrest-tmp ...) (if kwrest?
@@ -420,19 +420,15 @@
         defns)]
       [else defns]))
 
-  ;; A Narity is one of:
+  ;; A CaseArity is one of:
   ;;  - Natural
-  ;;  - (narity-at-least Natural)
-  ;; where a natural `n` is the argument count,
-  ;; and a negative `n` means "-(n+1) or more"
-  (define (narity-at-least v) (- (add1 v)))
-  (define (narity-at-least? n) (negative? n))
-  (define (narity-at-least-value n) (sub1 (- n)))
+  ;;  - (arity-at-least Natural)
+  ;; the arity of a single function case
 
-  ;; returns (listof (cons Narity (listof fcase)))
-  ;; although the `n`s can be in any order,
+  ;; returns (listof (cons CaseArity (listof fcase)))
+  ;; although the case-arities can be in any order,
   ;; the `fcase`s are kept in the same
-  ;; order within the group for one `n`
+  ;; order within the group for one case-arity
   (define (group-by-counts fcases)
     ;; if there is any rest clause, then other clauses
     ;; whose arity overlaps needs to be merged; a rest
@@ -446,20 +442,20 @@
            (if rest-min (min rest-min n) n)]
           [else rest-min])))
     (define ht
-      (for/fold ([ht #hasheqv()]) ([fc (in-list fcases)])
+      (for/fold ([ht #hash()]) ([fc (in-list fcases)])
         (define n (length (fcase-args fc)))
         (define key (if (and rest-min (>= n rest-min))
-                        (narity-at-least rest-min)
+                        (arity-at-least rest-min)
                         n))
         (hash-set ht key (cons fc (hash-ref ht key '())))))
     (for/list ([(key sames) (in-hash ht)])
       (cons key (reverse sames))))
 
   (define (find-matching-case n same)
-    (define find-n (if (narity-at-least? n) (narity-at-least-value n) n))
+    (define find-n (if (arity-at-least? n) (arity-at-least-value n) n))
     (for/or ([fc (in-list same)])
       (define fc-n (length (fcase-args fc)))
-      (and (eqv? find-n fc-n)
+      (and (equal? find-n fc-n)
            fc)))
 
   ;; when a clause that expects n' (or more) arguments is merged
@@ -468,7 +464,7 @@
   (define (adapt-arguments-for-count fc n arg-ids-stx rest-tmp kwrest-tmp try-next)
     (define base-f-n (length (fcase-args fc)))
     (define f-n (if (syntax-e (fcase-rest-arg fc))
-                    (narity-at-least base-f-n)
+                    (arity-at-least base-f-n)
                     base-f-n))
     (define adapt-kwrest
       (cond
@@ -483,10 +479,10 @@
                  (let () #,body)
                  (#,try-next)))]))
     (cond
-      [(eqv? n f-n) (values arg-ids-stx adapt-kwrest)]
+      [(equal? n f-n) (values arg-ids-stx adapt-kwrest)]
       [else
-       (unless (narity-at-least? n) (error "assert failed in wrap-adapted"))
-       (define base-n (narity-at-least-value n))
+       (unless (arity-at-least? n) (error "assert failed in wrap-adapted"))
+       (define base-n (arity-at-least-value n))
        (define arg-ids (syntax->list arg-ids-stx))
        (define new-arg-ids (append arg-ids
                                    (generate-temporaries (list-tail (fcase-args fc) base-n))))
@@ -496,7 +492,7 @@
           (let loop ([new-arg-ids (list-tail new-arg-ids base-n)])
             (cond
               [(null? new-arg-ids)
-               (if (narity-at-least? f-n)
+               (if (arity-at-least? f-n)
                    (adapt-kwrest body)
                    #`(if (null? #,rest-tmp)
                          (let ()
