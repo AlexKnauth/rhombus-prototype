@@ -1,5 +1,6 @@
 #lang racket/base
 (require (for-syntax racket/base
+                     syntax/name
                      syntax/parse
                      "srcloc.rkt"
                      "annotation-string.rkt")
@@ -38,7 +39,7 @@
                  . tail)
         #:with (b::binding ...) #'((group clause.bind ...) ...)
         (values
-         #`(#,(build-case-function #'match
+         #`(#,(build-case-function (or (syntax-local-infer-name stx) #'form-id)
                                    (l1falses #'(b ...))
                                    #'((b) ... (ignored))
                                    #`((b.parsed) ... (#,(binding-form
@@ -58,7 +59,7 @@
                  . tail)
         #:with (b::binding ...) #'((group bind ...) ...)
         (values
-         #`(#,(build-case-function #'match
+         #`(#,(build-case-function (or (syntax-local-infer-name stx) #'form-id)
                                    (l1falses #'(b ...))
                                    #'((b) ... (unmatched))
                                    #`((b.parsed) ... (#,(binding-form

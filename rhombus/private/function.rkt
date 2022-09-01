@@ -3,6 +3,7 @@
                      (only-in racket/function normalize-arity)
                      (only-in racket/set set-intersect set-union)
                      racket/syntax
+                     syntax/name
                      syntax/parse
                      "srcloc.rkt"
                      "consistent.rkt"
@@ -162,7 +163,7 @@
                    ...+)
                   . tail)
          (values
-          (build-case-function #'form-id
+          (build-case-function (or (syntax-local-infer-name stx) #'form-id)
                                #'((arg.kw ...) ...)
                                #'((arg ...) ...) #'((arg.parsed ...) ...)
                                #'(rest.arg ...) #'(rest.parsed ...)
@@ -175,7 +176,7 @@
                   (~and rhs (_::block body ...))
                   . tail)
          (define fun
-           (build-function #'form-id
+           (build-function (or (syntax-local-infer-name stx) #'form-id)
                            #'(arg.kw ...) #'(arg ...) #'(arg.parsed ...) #'(arg.default ...)
                            #'rest.arg #'rest.parsed
                            #'rest.kwarg #'rest.kwparsed
@@ -203,7 +204,7 @@
           the-name (syntax->list #'(ret.static-infos ...))
           (list
            #`(define #,the-name
-               #,(build-case-function #'form-id
+               #,(build-case-function the-name
                                       #'((arg.kw ...) ...)
                                       #'((arg ...) ...) #'((arg.parsed ...) ...)
                                       #'(rest.arg ...) #'(rest.parsed ...)
@@ -219,7 +220,7 @@
           #'name.name (list #'ret.static-infos)
           (list
            #`(define name.name
-               #,(build-function #'form-id
+               #,(build-function #'name.name
                                  #'(arg.kw ...) #'(arg ...) #'(arg.parsed ...) #'(arg.default ...)
                                  #'rest.arg #'rest.parsed
                                  #'rest.kwarg #'rest.kwparsed
