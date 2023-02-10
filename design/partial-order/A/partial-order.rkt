@@ -242,24 +242,52 @@
 (define (compare a b)
   (compare/recur a b compare))
 
-(define (partial-compare/within a b epsilon)
+;; ---------------------------------------------------------
+
+;; Short-circuiting via early-NaN
+
+(define (early-nan/= c) (if (zero? c) 0 +nan.0))
+
+(define (early-nan/<= c a b)
   (cond
-    [(numeric? a)
-     (ord-and/bool (numeric? b) (partial-compare-numeric/within a b epsilon))]
-    [else
-     (define (cmp ai bi) (partial-compare/within ai bi epsilon))
-     (partial-compare/recur a b cmp)]))
+    [(nan? c) (error 'compare "~v and ~v are incomparable" a b)]
+    [(> c 0) +nan.0]
+    [else c]))
+
+(define (early-nan/>= c a b)
+  (cond
+    [(nan? c) (error 'compare "~v and ~v are incomparable" a b)]
+    [(< c 0) +nan.0]
+    [else c]))
+
+(define (partial-compare/= a b)
+  (early-nan/= (partial-compare/recur a b partial-compare/=)))
+
+(define (compare/<= a b)
+  (early-nan/<= (partial-compare/recur a b compare/<=) a b))
+
+(define (compare/>= a b)
+  (early-nan/>= (partial-compare/recur a b compare/>=) a b))
+
+(define (partial-compare/within a b epsilon)
+  (early-nan/=
+   (cond
+     [(numeric? a)
+      (ord-and/bool (numeric? b) (partial-compare-numeric/within a b epsilon))]
+     [else
+      (define (cmp ai bi) (partial-compare/within ai bi epsilon))
+      (partial-compare/recur a b cmp)])))
 
 (define (within a b epsilon)
   (zero? (partial-compare/within a b epsilon)))
 
-(define (=~? a b) (zero? (partial_compare a b)))
-(define (!=~? a b) (not (zero? (partial_compare a b))))
+(define (=~? a b) (zero? (partial-compare/= a b)))
+(define (!=~? a b) (not (zero? (partial-compare/= a b))))
 
-(define (<~? a b) (negative? (compare a b)))
-(define (>~? a b) (positive? (compare a b)))
-(define (<=~? a b) (<= (compare a b) 0))
-(define (>=~? a b) (>= (compare a b) 0))
+(define (<~? a b) (negative? (compare/<= a b)))
+(define (>~? a b) (positive? (compare/>= a b)))
+(define (<=~? a b) (<= (compare/<= a b) 0))
+(define (>=~? a b) (>= (compare/>= a b) 0))
 
 (define-syntax-rule (define-comp~-infix name racket-name)
   (define-infix name racket-name
