@@ -23,7 +23,10 @@
          expected6
 
          input7
-         expected7)
+         expected7
+
+         input8
+         expected8)
 
 ;; input1 is split into parts to accomodate O(n^2) tests
 (define input1s
@@ -2101,3 +2104,74 @@ INPUT
     (group (quotes (group a (quotes (group nested)) b)))
     (group (quotes (group a (quotes (group nested)) b)))
     (group (quotes (group a (quotes (group nested)) b)))))
+
+(define input8
+#<<INPUT
+
+a:
+  b
+| c
+
+a: b
+| c
+
+a: b
+  | c
+
+a:«b»
+| c
+
+a:
+  b
+  | c
+
+a:
+  b | c
+
+a: b
+   | c
+
+a: b | c
+
+a | b: c
+  | d
+
+a | b: c | d
+
+a | b: «c» | d
+
+a |«b: «c»»| d
+
+INPUT
+)
+
+#|
+wrote, but with newlines instead of `;` semicolons:
+a:« b » |« c »
+a:« b » |« c »
+a:« b » |« c »
+a:« b » |« c »
+a:« b |« c » »
+a:« b |« c » »
+a:« b |« c » »
+a:« b |« c » »
+a |« b:« c » » |« d »
+a |« b:« c » » |« d »
+a |« b:« c » » |« d »
+a |« b:« c » » |« d »
+|#
+
+(define expected8
+  '(top
+    (group a (block (group b)) (alts (block (group c))))
+    (group a (block (group b)) (alts (block (group c))))
+    (group a (block (group b)) (alts (block (group c))))
+    (group a (block (group b)) (alts (block (group c))))
+    (group a (block (group b (alts (block (group c))))))
+    (group a (block (group b (alts (block (group c))))))
+    (group a (block (group b (alts (block (group c))))))
+    (group a (block (group b (alts (block (group c))))))
+    (group a (alts (block (group b (block (group c)))) (block (group d))))
+    (group a (alts (block (group b (block (group c)))) (block (group d))))
+    (group a (alts (block (group b (block (group c)))) (block (group d))))
+    (group a (alts (block (group b (block (group c)))) (block (group d))))))
