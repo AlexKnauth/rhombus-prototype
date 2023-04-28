@@ -428,11 +428,11 @@
                          end-t
                          tail-commenting
                          tail-raw)]
+                [(and (token? (group-state-block-mode sg))
+                      (eq? 'block-operator (token-name (group-state-block-mode sg))))
+                 (done)]
                 [else
-                 (if (and (token? (group-state-block-mode sg))
-                          (eq? 'block-operator (token-name (group-state-block-mode sg))))
-                     (fail (group-state-block-mode sg) "unnecessary `:` before `|`")
-                     (fail t "misplaced `|`"))])]
+                 (fail t "misplaced `|`")])]
              [else
               ;; Parse one group, then recur to continue the sequence:
               (check-column t column)
@@ -619,20 +619,60 @@
            (keep (state-delta s))]
           [(block-operator)
            (check-block-mode)
-           (parse-block t (cdr l)
-                        #:count? (state-count? s)
-                        #:line line
-                        #:closer (or (and (state-count? s)
-                                          (column-half-next (or (state-operator-column s)
-                                                                (state-column s))))
-                                     'any)
-                        #:delta (state-delta s)
-                        #:raw (state-raw s)
-                        #:bar-closes? (and (state-bar-closes? s)
-                                           (not (state-bar-closes-line s)))
-                        #:bar-closes-line (state-bar-closes-line s)
-                        #:can-empty? (state-can-empty? s)
-                        #:could-empty-if-start? #t)]
+           (define-values (g1 rest-l1
+                           group-end-line1 group-end-delta1
+                           block-tail-commenting1 block-tail-raw1)
+             (parse-block t (cdr l)
+                          #:count? (state-count? s)
+                          #:line line
+                          #:closer (or (and (state-count? s)
+                                            (column-half-next (or (state-operator-column s)
+                                                                  (state-column s))))
+                                       'any)
+                          #:delta (state-delta s)
+                          #:raw (state-raw s)
+                          #:bar-closes? (and (state-bar-closes? s)
+                                             (not (state-bar-closes-line s)))
+                          #:bar-closes-line (state-bar-closes-line s)
+                          #:can-empty? (state-can-empty? s)
+                          #:could-empty-if-start? #t))
+           (cond
+             [(not (and (pair? rest-l1)
+                        (state-count? s)
+                        (token-line (car rest-l1))
+                        ((token-line (car rest-l1)) . > . group-end-line1)))
+              (values g1 rest-l1
+                      group-end-line1 group-end-delta1
+                      block-tail-commenting1 block-tail-raw1)]
+             [else
+              ;; consume any group comments that are on their own line or prefixing `|`:
+              (define-values (group-commenting use-t use-l last-line delta raw)
+                (get-own-line-group-comment (car rest-l1) rest-l1 group-end-line1 group-end-delta1 block-tail-raw1 (state-count? s)))
+              (define column (token-column use-t))
+              (cond
+                [(not (and (eq? 'bar-operator (token-name use-t))
+                           (column . > . (state-column s))))
+                 (values g1 rest-l1
+                         group-end-line1 group-end-delta1
+                         block-tail-commenting1 block-tail-raw1)]
+                [else
+                 (define-values (g2 rest-l2
+                                    group-end-line2 group-end-delta2
+                                    block-tail-commenting2 block-tail-raw2)
+                   (parse-block #f use-l
+                                #:count? (state-count? s)
+                                #:block-mode 'inside
+                                #:line (token-line use-t)
+                                #:closer (or column 'any)
+                                #:bar-closes? #f
+                                #:bar-closes-line #f
+                                #:delta delta
+                                #:raw raw
+                                #:group-commenting group-commenting))
+                 (values (append g1 g2)
+                         rest-l2
+                         group-end-line2 group-end-delta2
+                         block-tail-commenting2 block-tail-raw2)])])]
           [(bar-operator)
            (parse-alts-block t l)]
           [(opener)
