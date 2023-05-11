@@ -637,25 +637,18 @@
                           #:can-empty? (state-can-empty? s)
                           #:could-empty-if-start? #t))
            (cond
-             [(not (and (pair? rest-l1)
-                        (state-count? s)
-                        (token-line (car rest-l1))
-                        ((token-line (car rest-l1)) . > . group-end-line1)))
-              (values g1 rest-l1
-                      group-end-line1 group-end-delta1
-                      block-tail-commenting1 block-tail-raw1)]
-             [else
+             [(and (pair? rest-l1)
+                   (or (and (state-count? s)
+                            (token-line (car rest-l1))
+                            ((token-line (car rest-l1)) . > . group-end-line1))
+                       (not (or (state-bar-closes? s) (state-bar-closes-line s)))))
               ;; consume any group comments that are on their own line or prefixing `|`:
               (define-values (group-commenting use-t use-l last-line delta raw)
                 (get-own-line-group-comment (car rest-l1) rest-l1 group-end-line1 group-end-delta1 block-tail-raw1 (state-count? s)))
               (define column (token-column use-t))
               (cond
-                [(not (and (eq? 'bar-operator (token-name use-t))
-                           (column . > . (state-column s))))
-                 (values g1 rest-l1
-                         group-end-line1 group-end-delta1
-                         block-tail-commenting1 block-tail-raw1)]
-                [else
+                [(and (eq? 'bar-operator (token-name use-t))
+                      (column . > . (state-column s)))
                  (define-values (g2 rest-l2
                                     group-end-line2 group-end-delta2
                                     block-tail-commenting2 block-tail-raw2)
@@ -672,9 +665,19 @@
                  (values (append g1 g2)
                          rest-l2
                          group-end-line2 group-end-delta2
-                         block-tail-commenting2 block-tail-raw2)])])]
+                         block-tail-commenting2 block-tail-raw2)]
+                [else
+                 (values g1 rest-l1
+                         group-end-line1 group-end-delta1
+                         block-tail-commenting1 block-tail-raw1)])]
+             [else
+              (values g1 rest-l1
+                      group-end-line1 group-end-delta1
+                      block-tail-commenting1 block-tail-raw1)])]
           [(bar-operator)
-           (parse-alts-block t l)]
+           (cond
+             [(eq? (state-block-mode s) 'end) (done)]
+             [else (parse-alts-block t l)])]
           [(opener)
            (check-block-mode)
            (define-values (closer tag paren-immed)

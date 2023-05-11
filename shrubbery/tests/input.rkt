@@ -2142,6 +2142,15 @@ a | b: «c» | d
 
 a |«b: «c»»| d
 
+a: b | c: d
+     | e
+
+a:«b | c: d  | e »
+
+a:«b | c:«d» | e »
+
+a:«b |«c:«d»»|«e»»
+
 INPUT
 )
 
@@ -2159,6 +2168,10 @@ a |« b:« c » » |« d »
 a |« b:« c » » |« d »
 a |« b:« c » » |« d »
 a |« b:« c » » |« d »
+a:« b |« c:« d » » |« e » »
+a:« b |« c:« d » » |« e » »
+a:« b |« c:« d » » |« e » »
+a:« b |« c:« d » » |« e » »
 |#
 
 (define expected8
@@ -2174,4 +2187,12 @@ a |« b:« c » » |« d »
     (group a (alts (block (group b (block (group c)))) (block (group d))))
     (group a (alts (block (group b (block (group c)))) (block (group d))))
     (group a (alts (block (group b (block (group c)))) (block (group d))))
-    (group a (alts (block (group b (block (group c)))) (block (group d))))))
+    (group a (alts (block (group b (block (group c)))) (block (group d))))
+    (group a (block (group b (alts (block (group c (block (group d))))
+                                   (block (group e))))))
+    (group a (block (group b (alts (block (group c (block (group d))))
+                                   (block (group e))))))
+    (group a (block (group b (alts (block (group c (block (group d))))
+                                   (block (group e))))))
+    (group a (block (group b (alts (block (group c (block (group d))))
+                                   (block (group e))))))))
