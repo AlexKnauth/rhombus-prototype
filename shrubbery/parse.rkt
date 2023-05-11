@@ -648,8 +648,8 @@
               (define column (token-column use-t))
               (cond
                 [(and (eq? 'bar-operator (token-name use-t))
-                      column
-                      (column . > . (state-column s)))
+                      (or (and column (column . > . (state-column s)))
+                          (not (or (state-bar-closes? s) (state-bar-closes-line s)))))
                  (define-values (g2 rest-l2
                                     group-end-line2 group-end-delta2
                                     block-tail-commenting2 block-tail-raw2)
